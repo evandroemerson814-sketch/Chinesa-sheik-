@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Royal Play - Cassino Virtual</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#10131c;color:white;font-family:Arial,sans-serif}
+header{padding:22px 16px;text-align:center;background:#191d2b;border-bottom:2px solid #d5ad53}
+header h1{color:#f3cc70;margin:0;font-size:28px}
+header p{color:#bbc0cf;font-size:13px}
+.notice{text-align:center;background:#302817;color:#ffdc8b;padding:10px;font-size:12px}
+main{max-width:650px;margin:auto;padding:18px}
+.balance{background:linear-gradient(120deg,#263b32,#17271f);padding:20px;border-radius:15px;text-align:center;border:1px solid #4e765b}
+.balance small{color:#c6d8c9}
+.balance h2{margin:9px;color:#f7d781;font-size:32px}
+.tabs{display:flex;gap:10px;margin:20px 0}
+button{cursor:pointer;border:0;border-radius:9px;padding:13px;font-weight:bold}
+.tabs button{flex:1;background:#272c3d;color:white}
+.tabs button.active,.play{background:#e4b94f;color:#211b0b}
+.game{background:#191d2b;border:1px solid #30364a;border-radius:15px;padding:20px;text-align:center}
+.game h2{margin-top:0}
+.display{font-size:58px;margin:22px 0;min-height:75px}
+input{width:100%;padding:13px;border-radius:8px;border:1px solid #454b60;background:#10131c;color:white;margin:10px 0 14px}
+.play{width:100%;font-size:16px}
+.result{min-height:26px;color:#f4d581;margin:15px 0 0}
+footer{text-align:center;color:#8e95a8;font-size:12px;padding:20px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+<h1>♛ ROYAL PLAY</h1>
+<p>Seu cassino de diversão virtual</p>
+</header>
+<div class="notice">DEMONSTRAÇÃO • MOEDAS SEM VALOR REAL • SEM DEPÓSITOS</div>
+<main>
+<section class="balance">
+<small>SEU SALDO DE TESTE</small>
+<h2 id="balance">1.000 fichas</h2>
+<small>Fichas fictícias, sem valor monetário</small>
+</section>
+
+<div class="tabs">
+<button id="slotTab" class="active" onclick="showGame('slot')">🎰 Caça-níquel</button>
+<button id="rouletteTab" onclick="showGame('roulette')">🎡 Roleta</button>
+</div>
+
+<section id="slot" class="game">
+<h2>🎰 Caça-níquel</h2>
+<p>Combine os símbolos para ganhar fichas virtuais.</p>
+<div class="display" id="slots">🍒 🍋 🍇</div>
+<label for="slotBet">Fichas por rodada</label>
+<input id="slotBet" type="number" min="1" max="100" value="10">
+<button class="play" onclick="spinSlots()">GIRAR</button>
+<p class="result" id="slotResult">Boa sorte!</p>
+</section>
+
+<section id="roulette" class="game hidden">
+<h2>🎡 Roleta virtual</h2>
+<p>Escolha vermelho, preto ou verde.</p>
+<div class="display" id="wheel">🎡</div>
+<label for="rouletteBet">Fichas por rodada</label>
+<input id="rouletteBet" type="number" min="1" max="100" value="10">
+<div style="display:flex;gap:8px">
+<button style="flex:1;background:#c94150;color:white" onclick="spinRoulette('vermelho')">Vermelho</button>
+<button style="flex:1;background:#303442;color:white" onclick="spinRoulette('preto')">Preto</button>
+<button style="flex:1;background:#25885d;color:white" onclick="spinRoulette('verde')">Verde</button>
+</div>
+<p class="result" id="rouletteResult">Escolha uma cor para jogar.</p>
+</section>
+</main>
+<footer>Royal Play © 2026 — Protótipo para fins de demonstração.</footer>
+
+<script>
+let balance = 1000;
+let busy = false;
+function updateBalance(){
+ document.getElementById('balance').textContent =
+ balance.toLocaleString('pt-BR')+' fichas';
+}
+function showGame(game){
+ document.getElementById('slot').classList.toggle('hidden',game!=='slot');
+ document.getElementById('roulette').classList.toggle('hidden',game!=='roulette');
+ document.getElementById('slotTab').classList.toggle('active',game==='slot');
+ document.getElementById('rouletteTab').classList.toggle('active',game==='roulette');
+}
+function getBet(id){
+ const bet=Number(document.getElementById(id).value);
+ if(!Number.isInteger(bet)||bet<1||bet>100){
+  alert('Escolha de 1 a 100 fichas por rodada.');
+  return null;
+ }
+ if(bet>balance){
+  alert('Você não tem fichas suficientes.');
+  return null;
+ }
+ return bet;
+}
+function spinSlots(){
+ if(busy)return;
+ const bet=getBet('slotBet');
+ if(bet===null)return;
+ busy=true;
+ balance-=bet;
+ updateBalance();
+ const symbols=['🍒','🍋','🍇','⭐','🔔','🍉'];
+ const result=Array.from({length:3},()=>symbols[Math.floor(Math.random()*symbols.length)]);
+ document.getElementById('slots').textContent=result.join(' ');
+ let prize=0;
+ if(result.every(s=>s===result[0]))prize=bet*5;
+ else if(result[0]===result[1]||result[1]===result[2])prize=bet*2;
+ balance+=prize;
+ updateBalance();
+ document.getElementById('slotResult').textContent=prize?
+ 'Você ganhou '+prize+' fichas virtuais!':'Não ganhou nesta rodada. Tente novamente!';
+ busy=false;
+}
+function spinRoulette(color){
+ if(busy)return;
+ const bet=getBet('rouletteBet');
+ if(bet===null)return;
+ busy=true;
+ balance-=bet;
+ const number=Math.floor(Math.random()*37);
+ const resultColor=number===0?'verde':number%2===0?'preto':'vermelho';
+ document.getElementById('wheel').textContent=number+' • '+resultColor;
+ let prize=0;
+ if(color===resultColor)prize=number===0?bet*10:bet*2;
+ balance+=prize;
+ updateBalance();
+ document.getElementById('rouletteResult').textContent=prize?
+ 'Acertou! Você recebeu '+prize+' fichas virtuais.':
+ 'Não acertou desta vez. Resultado: '+resultColor+'.';
+ busy=false;
+}
+</script>
+</body>
+</html>
